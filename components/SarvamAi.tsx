@@ -23,7 +23,10 @@ export const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text }) 
         speaker: "anushka",
         target_language_code: "en-IN",
       });
-
+      if (!response.audios) {
+        throw new Error("No audio data received");
+      }
+      console.log("Audio data received:", response.audio);
       const audio = new Audio(`data:audio/mp3;base64,${response.audio}`);
       audio.play();
     } catch (error) {
