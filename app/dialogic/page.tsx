@@ -9,10 +9,7 @@ const DynamicDesmosCalculator = dynamic(() => import("@/components/ui/DesmosCalc
   ssr: false,
 })
 
-interface ApiResponse {
-  chatContent: string
-  imageUrl: string
-}
+
 
 interface Transcript {
   text: string
@@ -138,7 +135,6 @@ function Page() {
   const [isListening, setIsListening] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showGraph, setShowGraph] = useState(false)
-  const [selectedLLM, setSelectedLLM] = useState<"gemini" | "api">("gemini")
   const [interrupted, setInterrupted] = useState(false)
   const [expressions, setExpressions] = useState<{ id: string; latex: string }[]>([{ id: "graph1", latex: "y=x^2" }])
   const [videoId, setVideoId] = useState<string>("")
@@ -147,8 +143,9 @@ function Page() {
   const [isDarkMode, setIsDarkMode] = useState(true)
 
   const regex = /y\s*=\s*[\w^{}\\]+/g
+  const goog = process.env.GOOGLE ?? '';
 
-  const genAI = new GoogleGenerativeAI("AIzaSyBd8-ch43rR6Gy9l6y-W_aP59XO7RWusso")
+  const genAI = new GoogleGenerativeAI(goog)
 
   useEffect(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
@@ -185,109 +182,67 @@ function Page() {
       let generatedText: string
       let imageUrl = ""
 
-      if (selectedLLM === "gemini") {
-        const generationConfig = {
-          maxOutputTokens: 500,
-          temperature: 0.7,
-          topP: 0.8,
-          topK: 40,
-        }
+      const transcriptText = transcript.map((t) => t.text).join(" ")
 
-        const model = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash",
-          generationConfig,
-        })
+      const conversationHistory = conversation
+        .map((msg) => `${msg.role === "user" ? "Human" : "AI"}: ${msg.content}`)
+        .join("\n")
 
-        const conversationHistory = conversation
-          .map((msg) => `${msg.role === "user" ? "Student" : "Teacher"}: ${msg.content}`)
-          .join("\n")
+      const prompt = `
+        Conversation history:
+        ${conversationHistory}
 
-        const transcriptText = transcript.map((t) => t.text).join(" ")
+        if there is something about who you created or built is specified below then say "I was built by The Vanguards" only if they ask, if not then dont mention this.
+         You are a Socratic teacher.
+        First answer the question that is asked in 5-6 lines and then Engage in a thoughtful dialogue with the user, asking questions one by one to help them discover knowledge on their own.
+        The question is: ${input}
+        ${fileContent ? `Consider this additional context from the uploaded document: ${fileContent}` : ""}
+        ${transcriptText ? `Consider this as a transcript of a YouTube video: ${transcriptText}` : ""}
+        Your response:
+      `
 
-        const prompt = `
-          If someone asks you who created you or anything of that sorts tell "I was built by The Vanguards" only if someone asks.
-          You are a Socratic teacher.
-          First answer the question that is asked in 5-6 lines and then Engage in a thoughtful dialogue with the student, asking probing questions to help them discover knowledge on their own.
-          ${fileContent ? `Consider this additional context from the uploaded document: ${fileContent}` : ""}
-          ${transcriptText ? `Consider this as a transcript of a YouTube video: ${transcriptText}` : ""}
-          Your response:
-        `
+      const response = await fetch("/api/getData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: prompt,
+          query: input,
+        }),
+      })
 
-        const chat = await model.startChat({
-          history: [
-            {
-              role: "user",
-              parts: [{ text: conversationHistory + prompt }],
-            },
-          ],
-        })
-
-        const result = await chat.sendMessage(input)
-        generatedText = await result.response.text()
-        generatedText = generatedText.replace(/\* /g, "\n")
-      } else {
-        const transcriptText = transcript.map((t) => t.text).join(" ")
-
-        const conversationHistory = conversation
-          .map((msg) => `${msg.role === "user" ? "Human" : "AI"}: ${msg.content}`)
-          .join("\n")
-
-        const prompt = `
-          Conversation history:
-          ${conversationHistory}
-
-          if there is something about who you created or built is specified below then say "I was built by The Vanguards" only if they ask, if not then dont mention this.
-           You are a Socratic teacher.
-          Engage in a thoughtful dialogue with the user, asking questions one by one to help them discover knowledge on their own.
-          The question is: ${input}
-          ${fileContent ? `Consider this additional context from the uploaded document: ${fileContent}` : ""}
-          ${transcriptText ? `Consider this as a transcript of a YouTube video: ${transcriptText}` : ""}
-          Your response:
-        `
-
-        const response = await fetch("/api/getData", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: prompt,
-            query: input,
-          }),
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data from the API")
-        }
-
-        const data = await response.json()
-        generatedText = data.chatContent
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
-
-        const image_prompt = `give a one word that can describe this sentence for image generation. remeber this sentence is using socratic method to teach so give the word for the content its trying to explain: ${generatedText}. the input given was :${input}`
-
-        const result = await model.generateContent(image_prompt)
-        console.log(result.response.text())
-        const response1 = await fetch("/api/getData", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: prompt,
-            query: await result.response.text(),
-          }),
-        })
-
-        if (!response1.ok) {
-          console.error("Failed to fetch data from /api/getData", await response1.text())
-          throw new Error("Failed to fetch data from /api/getData")
-        }
-
-        const data1 = await response1.json()
-
-        imageUrl = data1.imageUrl
+      if (!response.ok) {
+        throw new Error("Failed to fetch data from the API")
       }
+
+      const data = await response.json()
+      generatedText = data.chatContent
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+
+      const image_prompt = `give a one word that can describe this sentence for image generation. remeber this sentence is using socratic method to teach so give the word for the content its trying to explain: ${generatedText}. the input given was :${input}`
+
+      const result = await model.generateContent(image_prompt)
+      console.log(result.response.text())
+      const response1 = await fetch("/api/getData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: prompt,
+          query: await result.response.text(),
+        }),
+      })
+
+      if (!response1.ok) {
+        console.error("Failed to fetch data from /api/getData", await response1.text())
+        throw new Error("Failed to fetch data from /api/getData")
+      }
+
+      const data1 = await response1.json()
+
+      imageUrl = data1.imageUrl
 
       const mathEquations = generatedText.match(regex)
 
@@ -454,35 +409,12 @@ function Page() {
                   AI Teacher
                 </h1>
                 <p className={`text-sm mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-                  Socratic learning powered by MetaLearn
+                  Advanced Socratic learning powered by MetaLearn
                 </p>
               </div>
 
-              {/* AI Mode Selector */}
+              {/* Dark Mode Toggle */}
               <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <select
-                    value={selectedLLM}
-                    onChange={(e) => setSelectedLLM(e.target.value as "gemini" | "api")}
-                    className={`appearance-none px-4 py-2 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#00FFFF] ${
-                      isDarkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="gemini">Dialogic Basic</option>
-                    <option value="api">Dialogic Advanced</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg className="w-4 h-4 text-[#00FFFF]" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className={`p-2 rounded-full transition-all duration-300 ${
@@ -521,7 +453,7 @@ function Page() {
                     Welcome to Dialogic
                   </h3>
                   <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-                    Start your Socratic learning journey by asking a question!
+                    Start your advanced Socratic learning journey by asking a question!
                   </p>
                 </div>
               ) : (
@@ -633,47 +565,45 @@ function Page() {
                 </div>
 
                 {/* Advanced Features Row */}
-                {selectedLLM === "api" && (
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="text"
-                      value={videoId}
-                      onChange={(e) => setVideoId(e.target.value)}
-                      className={`flex-1 px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#00FFFF] ${
-                        isDarkMode
-                          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                      }`}
-                      placeholder="YouTube video link (optional)"
-                    />
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={videoId}
+                    onChange={(e) => setVideoId(e.target.value)}
+                    className={`flex-1 px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#00FFFF] ${
+                      isDarkMode
+                        ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                    placeholder="YouTube video link (optional)"
+                  />
 
-                    <button
-                      type="button"
-                      onClick={triggerFileUpload}
-                      className={`p-3 rounded-lg transition-all duration-300 hover:scale-105 ${
-                        isDarkMode
-                          ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
+                  <button
+                    type="button"
+                    onClick={triggerFileUpload}
+                    className={`p-3 rounded-lg transition-all duration-300 hover:scale-105 ${
+                      isDarkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
 
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      accept=".docx"
-                      className="hidden"
-                    />
-                  </div>
-                )}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".docx"
+                    className="hidden"
+                  />
+                </div>
               </form>
             </div>
           </div>
