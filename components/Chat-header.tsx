@@ -4,15 +4,17 @@ import { CardHeader } from "@/components/ui/card"
 
 const ChatHeader = () => {
   return (
-    <CardHeader className="p-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">
-            <span className="bg-gradient-to-r from-cyan-400 to-foreground bg-clip-text text-transparent">Dialogic</span>{" "}
-            AI Teacher
-          </h1>
-          <p className="text-sm mt-1 text-muted-foreground">Advanced Socratic learning powered by MetaLearn</p>
-        </div>
+    <CardHeader className="p-2 bg-background/90 backdrop-blur-sm border-b">
+      <div className="flex flex-col gap-0.5">
+        <h1 className="text-lg md:text-2xl font-semibold leading-tight">
+          <span className="bg-gradient-to-r from-cyan-400 to-foreground bg-clip-text text-transparent">
+            Dialogic
+          </span>{" "}
+          AI Teacher
+        </h1>
+        <p className="text-xs md:text-sm text-muted-foreground">
+          Socratic-style learning assistant powered by MetaLearn Engine
+        </p>
       </div>
     </CardHeader>
   )

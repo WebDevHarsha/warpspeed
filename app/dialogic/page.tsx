@@ -1,6 +1,6 @@
 "use client"
 
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react"
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 import VerticalNavbar from "@/components/vertical-navbar"
@@ -9,13 +9,13 @@ import MessageBubble from "@/components/message-bubble"
 import ThinkingIndicator from "@/components/thinking-indicator"
 import ChatInput from "@/components/chat-input"
 import GraphPanel from "@/components/graph-panel"
-import ChatHeader from "@/components/Chat-header"
 
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
 import { generateAIResponse } from "@/utils/ai-service"
 import { handleFileUpload } from "@/utils/file-utils"
 
 import type { Message, Transcript, Expression } from "@/types"
+import ChatHeader from "@/components/Chat-header"
 
 function DialogicAITeacher() {
   const [conversation, setConversation] = useState<Message[]>([])
@@ -31,14 +31,12 @@ function DialogicAITeacher() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const regex = /y\s*=\s*[\w^{}\\]+/g
-
   useSpeechRecognition({ isListening, setUserInput, setIsListening })
 
   const generateResponse = async (input: string) => {
     setIsThinking(true)
     try {
       const { generatedText } = await generateAIResponse(input, conversation, fileContent, transcript)
-
       const mathEquations = generatedText.match(regex)
       if (mathEquations) {
         const desmosExpressions = mathEquations.map((equation, index) => ({
@@ -54,18 +52,10 @@ function DialogicAITeacher() {
         { role: "user", content: input },
         { role: "ai", content: generatedText },
       ])
-
       speakText(generatedText)
     } catch (error) {
-      console.error("AI error:", error)
       const errorMsg = "I apologize, I'm having trouble thinking. Could you please rephrase?"
-      setConversation((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          content: errorMsg,
-        },
-      ])
+      setConversation((prev) => [...prev, { role: "ai", content: errorMsg }])
       speakText(errorMsg)
     }
     setIsThinking(false)
@@ -104,58 +94,64 @@ function DialogicAITeacher() {
   const triggerFileUpload = () => fileInputRef.current?.click()
   const toggleListening = () => setIsListening((prev) => !prev)
 
+
+  const endOfMessagesRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [conversation, isThinking])
+
+
+
   return (
-    <div className="relative h-screen w-screen flex bg-gradient-to-br from-background via-background/95 to-background overflow-hidden">
-      {/* Background Visuals */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-400/5 dark:bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyan-400/10 dark:border-cyan-400/20 rounded-full animate-spin" style={{ animationDuration: "30s" }}></div>
+   <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
+  {/* Sidebar (hidden on small screens) */}
+  <div className="hidden md:block">
+    <VerticalNavbar />
+  </div>
+
+  {/* Chat Panel */}
+  <div className="flex flex-col flex-1 md:border-l md:border-r bg-muted/30">
+    <ChatHeader />
+
+    {/* Main content */}
+    <div className="flex flex-col h-full p-4 overflow-hidden">
+      <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hidden">
+        {conversation.length === 0 ? (
+          <WelcomeScreen />
+        ) : (
+          conversation.map((message, i) => <MessageBubble key={i} message={message} />)
+        )}
+        {isThinking && <ThinkingIndicator />}
+
+        {/* Scroll target */}
+        <div ref={endOfMessagesRef} />
       </div>
 
-      {/* Sidebar */}
-      <div className="hidden md:flex h-screen relative z-10">
-        <VerticalNavbar />
-      </div>
+      <ChatInput
+        userInput={userInput}
+        setUserInput={setUserInput}
+        handleSubmit={handleSubmit}
+        isThinking={isThinking}
+        isListening={isListening}
+        toggleListening={toggleListening}
+        videoId={videoId}
+        setVideoId={setVideoId}
+        triggerFileUpload={triggerFileUpload}
+        fileInputRef={fileInputRef}
+        handleFileUpload={handleFileUploadEvent}
+      />
+    </div>
+  </div>
 
-      {/* Chat Area */}
-      <div className={`flex-1 h-screen w-full flex flex-col justify-between items-center z-10 transition-all duration-500 ${showGraph ? "md:w-2/3" : "w-full"}`}>
-        <div className="w-full h-full flex flex-col gap-0">
-          <Card className="flex-1 flex flex-col bg-background/95 backdrop-blur border shadow-none md:shadow-none overflow-hidden">
-            <ChatHeader />
-            <CardContent className="flex flex-col justify-between flex-1 p-0">
-              <div className="flex-1 overflow-hidden">
-                <div className="flex flex-col h-full">
-                  {conversation.length === 0 ? (
-                    <WelcomeScreen />
-                  ) : (
-                    conversation.map((message, i) => <MessageBubble key={i} message={message} />)
-                  )}
-                  {isThinking && <ThinkingIndicator />}
-                </div>
-              </div>
-              <ChatInput
-                userInput={userInput}
-                setUserInput={setUserInput}
-                handleSubmit={handleSubmit}
-                isThinking={isThinking}
-                isListening={isListening}
-                toggleListening={toggleListening}
-                videoId={videoId}
-                setVideoId={setVideoId}
-                triggerFileUpload={triggerFileUpload}
-                fileInputRef={fileInputRef}
-                handleFileUpload={handleFileUploadEvent}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Graph Panel */}
+  {/* Graph Panel */}
+  {showGraph && (
+    <div className="hidden md:block w-[380px] border-l">
       <GraphPanel showGraph={showGraph} setShowGraph={setShowGraph} expressions={expressions} />
     </div>
+  )}
+</div>
   )
+
 }
 
 export default DialogicAITeacher
