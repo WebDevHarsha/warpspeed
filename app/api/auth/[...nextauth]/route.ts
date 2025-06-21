@@ -2,8 +2,12 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
+import { prisma } from "@/lib/db";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+
 
 export const authOptions: NextAuthOptions = {
+    adapter: PrismaAdapter(prisma),
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -22,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
 
             if (user) {
-                token.email = user.email;
+                token.email = user.email || "";
                 token.id = user.id;
 
             }
