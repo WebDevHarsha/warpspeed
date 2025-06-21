@@ -37,7 +37,7 @@ function DialogicAITeacher() {
   const generateResponse = async (input: string) => {
     setIsThinking(true)
     try {
-      const { generatedText, imageUrl } = await generateAIResponse(input, conversation, fileContent, transcript)
+      const { generatedText } = await generateAIResponse(input, conversation, fileContent, transcript)
 
       const mathEquations = generatedText.match(regex)
       if (mathEquations) {
@@ -52,7 +52,7 @@ function DialogicAITeacher() {
       setConversation((prev) => [
         ...prev,
         { role: "user", content: input },
-        { role: "ai", content: generatedText, imageUrl },
+        { role: "ai", content: generatedText },
       ])
 
       speakText(generatedText)
@@ -64,7 +64,6 @@ function DialogicAITeacher() {
         {
           role: "ai",
           content: errorMsg,
-          imageUrl: "https://via.placeholder.com/150?text=Error",
         },
       ])
       speakText(errorMsg)
