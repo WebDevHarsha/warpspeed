@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { signIn } from "next-auth/react";
 
 import { useState } from "react"
 import Link from "next/link"
@@ -178,11 +179,17 @@ export default function LoginPage() {
 
             {/* Social Login */}
             <div className="space-y-3">
+
               <button
                 type="button"
-                className={`w-full flex items-center justify-center px-4 py-3 border rounded-lg transition-all duration-300 hover:scale-105 ${isDarkMode ? "border-gray-600 bg-gray-700 text-white hover:bg-gray-600" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
+                onClick={() => signIn("google")}
+                className={`w-full flex items-center justify-center px-4 py-3 border rounded-lg transition-all duration-300 hover:scale-105 ${isDarkMode
+                    ? "border-gray-600 bg-gray-700 text-white hover:bg-gray-600"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                  {/* SVG paths unchanged */}
                   <path
                     fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -202,6 +209,7 @@ export default function LoginPage() {
                 </svg>
                 Continue with Google
               </button>
+
 
               <button
                 type="button"
