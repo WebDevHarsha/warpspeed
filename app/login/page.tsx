@@ -182,7 +182,7 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={() => signIn("google")}
+                onClick={() => signIn("google", { callbackUrl: "/" })}
                 className={`w-full flex items-center justify-center px-4 py-3 border rounded-lg transition-all duration-300 hover:scale-105 ${isDarkMode
                     ? "border-gray-600 bg-gray-700 text-white hover:bg-gray-600"
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
