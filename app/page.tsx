@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+
 export default function HomePage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
 
@@ -52,9 +53,12 @@ export default function HomePage() {
             >
               {isDarkMode ? "☀️" : "🌙"}
             </button>
-            <button className="bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white px-6 py-2 rounded-full hover:shadow-lg hover:shadow-[#00FFFF]/25 transition-all duration-300 hover:scale-105">
-              Sign In
-            </button>
+            <a href="/signup">
+  <button className="bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white px-6 py-2 rounded-full hover:shadow-lg hover:shadow-[#00FFFF]/25 transition-all duration-300 hover:scale-105">
+    Sign In
+  </button>
+</a>
+
           </div>
         </div>
       </nav>
