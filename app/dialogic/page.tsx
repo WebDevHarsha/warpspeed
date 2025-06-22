@@ -26,10 +26,53 @@ function DialogicAITeacher() {
   const [videoId, setVideoId] = useState<string>("")
   const [transcript, setTranscript] = useState<Transcript[]>([])
   const [interrupted, setInterrupted] = useState(false)
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null!)
 
   const regex = /y\s*=\s*[\w^{}\\]+/g
   useSpeechRecognition({ isListening, setUserInput, setIsListening })
+
+  // Function to fetch YouTube transcript
+  const fetchYouTubeTranscript = async (videoId: string): Promise<Transcript[]> => {
+    try {
+      setIsLoadingTranscript(true)
+      const response = await fetch(`http://localhost:8000/transcript/${videoId}`)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transcript: ${response.status} ${response.statusText}`)
+      }
+      
+      const transcriptData = await response.json()
+      return transcriptData
+    } catch (error) {
+      console.error('Error fetching YouTube transcript:', error)
+      throw error
+    } finally {
+      setIsLoadingTranscript(false)
+    }
+  }
+
+  // Effect to fetch transcript when videoId changes
+  useEffect(() => {
+    const loadTranscript = async () => {
+      if (videoId.trim()) {
+        try {
+          const transcriptData = await fetchYouTubeTranscript(videoId)
+          setTranscript(transcriptData)
+          console.log('Transcript loaded successfully:', transcriptData)
+        } catch (error) {
+          console.error('Failed to load transcript:', error)
+          setTranscript([])
+          // Optionally show user-friendly error message
+          alert('Failed to load YouTube transcript. Please check the video ID and try again.')
+        }
+      } else {
+        setTranscript([])
+      }
+    }
+
+    loadTranscript()
+  }, [videoId])
 
   const generateResponse = async (input: string) => {
     setIsThinking(true)
@@ -92,13 +135,10 @@ function DialogicAITeacher() {
   const triggerFileUpload = () => fileInputRef.current?.click()
   const toggleListening = () => setIsListening((prev) => !prev)
 
-
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [conversation, isThinking])
-
-
 
   return (
    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
@@ -120,6 +160,11 @@ function DialogicAITeacher() {
           conversation.map((message, i) => <MessageBubble key={i} message={message} />)
         )}
         {isThinking && <ThinkingIndicator />}
+        {isLoadingTranscript && (
+          <div className="flex items-center justify-center p-4">
+            <div className="text-sm text-muted-foreground">Loading YouTube transcript...</div>
+          </div>
+        )}
 
         {/* Scroll target */}
         <div ref={endOfMessagesRef} />
@@ -149,7 +194,6 @@ function DialogicAITeacher() {
   )}
 </div>
   )
-
 }
 
 export default DialogicAITeacher
