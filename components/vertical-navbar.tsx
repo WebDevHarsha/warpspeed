@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Home, Brain, BookOpen, Moon, Settings, User } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const VerticalNavbar = () => {
   const { data: session } = useSession()
@@ -16,6 +17,10 @@ const VerticalNavbar = () => {
     { href: "/sleepai", icon: Moon, label: "Sleep Learning", active: false },
     { href: "/settings", icon: Settings, label: "Settings", active: false },
   ]
+
+  const user = session?.user
+  const userInitial = user?.name?.charAt(0).toUpperCase()
+  const fallbackImage = "/fallback-user.png" // optional: place in /public
 
   return (
     <Card className="w-64 h-full rounded-none bg-background/90 backdrop-blur-sm shadow-none border-none flex flex-col">
@@ -52,34 +57,45 @@ const VerticalNavbar = () => {
         <div className="mt-auto pt-6">
           <Card className="p-3 bg-muted/40 shadow-none border-none">
             <div className="flex items-center space-x-3">
-              {session?.user?.image ? (
-                <img
-                  src={session.user.image}
-                  alt="User"
-                  className="w-8 h-8 rounded-full object-cover"
+              <Avatar className="h-8 w-8 border">
+                <AvatarImage
+                  src={user?.image || fallbackImage}
+                  alt={user?.name || "User"}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = fallbackImage
+                  }}
                 />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-cyan-400 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-              )}
+                <AvatarFallback className="bg-gradient-to-r from-primary to-cyan-400 text-white font-medium text-sm">
+                  {userInitial || <User className="h-4 w-4" />}
+                </AvatarFallback>
+              </Avatar>
+
               <div>
                 <div className="text-sm font-medium">
-                  {session?.user?.name || "Anonymous"}
+                  {user?.name || "Guest"}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {session?.user?.email || "Not signed in"}
+                  {user?.email || "Not signed in"}
                 </div>
               </div>
             </div>
 
-            {session && (
+            {session ? (
               <Button
                 variant="link"
                 className="text-xs text-muted-foreground px-0 pt-1"
                 onClick={() => signOut()}
               >
                 Sign out
+              </Button>
+            ) : (
+              <Button
+                variant="link"
+                className="text-xs text-muted-foreground px-0 pt-1"
+                onClick={() => signIn("google", { callbackUrl: "/dialogic" })}
+              >
+                Sign in
               </Button>
             )}
           </Card>
