@@ -1,16 +1,19 @@
 "use client"
 
 import Link from "next/link"
+import { useSession, signIn, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Home, Brain, BookOpen, Moon, Settings, User } from "lucide-react"
 
 const VerticalNavbar = () => {
+  const { data: session } = useSession()
+
   const navItems = [
     { href: "/", icon: Home, label: "Home", active: false },
     { href: "/dialogic", icon: Brain, label: "Dialogic Chat", active: true },
     { href: "/learning-paths", icon: BookOpen, label: "Learning Paths", active: false },
-    { href: "/sleep-learning", icon: Moon, label: "Sleep Learning", active: false },
+    { href: "/sleepai", icon: Moon, label: "Sleep Learning", active: false },
     { href: "/settings", icon: Settings, label: "Settings", active: false },
   ]
 
@@ -49,14 +52,36 @@ const VerticalNavbar = () => {
         <div className="mt-auto pt-6">
           <Card className="p-3 bg-muted/40 shadow-none border-none">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-cyan-400 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
+              {session?.user?.image ? (
+                <img
+                  src={session.user.image}
+                  alt="User"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-r from-primary to-cyan-400 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary-foreground" />
+                </div>
+              )}
               <div>
-                <div className="text-sm font-medium">Student</div>
-                <div className="text-xs text-muted-foreground">Learning Mode</div>
+                <div className="text-sm font-medium">
+                  {session?.user?.name || "Anonymous"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {session?.user?.email || "Not signed in"}
+                </div>
               </div>
             </div>
+
+            {session && (
+              <Button
+                variant="link"
+                className="text-xs text-muted-foreground px-0 pt-1"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </Button>
+            )}
           </Card>
         </div>
       </CardContent>
