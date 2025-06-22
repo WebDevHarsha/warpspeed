@@ -22,44 +22,53 @@ export default function SleepLearningDocumentSummarizer() {
   const [remainingTime, setRemainingTime] = useState(0)
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
   const [musicStarted, setMusicStarted] = useState(false)
+  const [musicLoaded, setMusicLoaded] = useState(false)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    const music = new Audio('/calm.mp3')
+    const music = new Audio()
     music.loop = true
     music.volume = 0.2
     music.preload = 'auto'
     
-    music.addEventListener('canplaythrough', () => {
+    const handleCanPlay = () => {
+      setMusicLoaded(true)
       if (!musicStarted) {
-        music.play().catch(e => {
-          console.log('Auto-play blocked by browser, will start on user interaction')
+        music.play().catch(() => {
+          console.log('Auto-play blocked, will start on user interaction')
         })
         setMusicStarted(true)
       }
-    })
+    }
     
-    music.addEventListener('error', (e) => {
-      console.error('Background music loading error:', e)
-    })
+    const handleError = (e: Event) => {
+      console.log('Background music not available, continuing without music')
+      setMusicLoaded(false)
+    }
     
+    music.addEventListener('canplaythrough', handleCanPlay)
+    music.addEventListener('error', handleError)
+    music.addEventListener('loadstart', () => setMusicLoaded(false))
+    
+    music.src = '/calm.mp3'
     setBackgroundMusic(music)
 
     return () => {
       if (music) {
         music.pause()
+        music.removeEventListener('canplaythrough', handleCanPlay)
+        music.removeEventListener('error', handleError)
+        music.removeEventListener('loadstart', () => setMusicLoaded(false))
         music.src = ''
-        music.removeEventListener('canplaythrough', () => {})
-        music.removeEventListener('error', () => {})
       }
     }
   }, [musicStarted])
 
   const startMusicOnInteraction = () => {
-    if (backgroundMusic && !musicStarted) {
-      backgroundMusic.play().catch(e => console.error('Music play error:', e))
+    if (backgroundMusic && musicLoaded && !musicStarted) {
+      backgroundMusic.play().catch(() => {})
       setMusicStarted(true)
     }
   }
@@ -145,9 +154,10 @@ Maintain a peaceful, soothing tone. Build the explanation logically from one con
 
 The entire summary should read like a comforting voice, not a textbook. Keep it under 1000 characters total. Avoid formatting, lists, or special characters—just smooth, continuous text.
 
-Here is the content to summarize:
+Here is the content to summarize and dont explain about the pdf width,etc explain the content:
 
 ${content}
+
 `,
       })
 
@@ -195,8 +205,8 @@ ${content}
       const url = URL.createObjectURL(blob)
       setAudioUrl(url)
 
-      if (backgroundMusic && backgroundMusic.paused) {
-        backgroundMusic.play().catch(e => console.error('Music play error:', e))
+      if (backgroundMusic && backgroundMusic.paused && musicLoaded) {
+        backgroundMusic.play().catch(() => {})
       }
 
       const audio = new Audio(url)
@@ -257,8 +267,10 @@ ${content}
             Transform your study materials into gentle sleep learning audio
           </p>
         </div>
+
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">📚 Upload Your Study Documents</h2>
+          
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Select Documents (Word, PDF, TXT, Markdown)
@@ -275,6 +287,7 @@ ${content}
               Supported formats: .txt, .md, .doc, .docx, .pdf (Note: For best results with Word/PDF files, consider converting to plain text first)
             </p>
           </div>
+
           {uploadedFiles.length > 0 && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-medium text-gray-700 mb-2">📄 Uploaded Files:</h3>
@@ -294,6 +307,7 @@ ${content}
               </button>
             </div>
           )}
+
           <button
             onClick={generateSummary}
             disabled={isProcessing || !documents}
@@ -306,6 +320,7 @@ ${content}
             {isProcessing ? "Creating Sleep Learning Summary..." : "🧠 Generate Sleep Learning Summary"}
           </button>
         </div>
+
         {summary && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">📝 Sleep Learning Summary</h2>
@@ -322,9 +337,11 @@ ${content}
             </div>
           </div>
         )}
+
         {summary && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">🎧 Sleep Learning Audio</h2>
+            
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 ⏰ Sleep Timer (seconds) - Delay before audio starts
@@ -356,30 +373,68 @@ ${content}
                     <span className="font-mono text-lg font-bold text-green-600">
                       {formatTime(remainingTime)}
                     </span>
+                    <span className="text-sm text-gray-500">until learning starts</span>
                   </div>
                 )}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                💤 Perfect for setting up before you get comfortable for sleep learning
+              </p>
             </div>
-            <div className="flex items-center gap-4">
+
+            <div className="flex gap-4 justify-center flex-wrap">
               <button
                 onClick={handlePlayAudio}
                 disabled={isGeneratingAudio}
                 className={`px-6 py-3 rounded-lg font-semibold text-white transition-all ${
                   isGeneratingAudio
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
                 }`}
               >
-                {isGeneratingAudio ? "Generating Audio..." : "🔊 Play Sleep Learning Audio"}
+                {isGeneratingAudio ? "Preparing Sleep Learning Audio..." : "🎧 Start Sleep Learning"}
               </button>
+
               {audioUrl && (
                 <button
                   onClick={handleDownload}
-                  className="text-sm text-blue-600 underline hover:text-blue-800"
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold hover:from-green-700 hover:to-teal-700 transition-all hover:shadow-lg"
                 >
-                  Download MP3
+                  💾 Download Audio
                 </button>
               )}
+            </div>
+
+            <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <h3 className="font-semibold text-purple-800 mb-2">💤 Optimize Your Sleep Learning:</h3>
+              <ul className="text-sm text-purple-700 space-y-1">
+                <li>• 🛏️ Find a comfortable, quiet environment</li>
+                <li>• ⏰ Use the timer to start after you're settled</li>
+                <li>• 🔊 Keep volume at a gentle, comfortable level</li>
+                <li>• 🎵 Soft background music plays continuously for optimal learning</li>
+                <li>• 🔄 Repeat sessions for maximum learning benefit</li>
+                <li>• 😴 Best results when you're in a relaxed, drowsy state</li>
+                <li>• 📱 Put your phone in airplane mode to avoid interruptions</li>
+              </ul>
+            </div>
+
+            {audioUrl && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">🎵 Sleep Learning Audio Player:</h4>
+                <audio controls className="w-full">
+                  <source src={audioUrl} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">📊 System Status:</h4>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div>Background Music: {musicLoaded ? (musicStarted ? '🎵 Playing Continuously' : '🎵 Ready to Play') : '⚠️ Optional (Not Available)'}</div>
+                <div>Learning Audio: {audioUrl ? '✅ Generated' : '⏳ Pending'}</div>
+                <div>Documents: {uploadedFiles.length} file(s) uploaded</div>
+              </div>
             </div>
           </div>
         )}
