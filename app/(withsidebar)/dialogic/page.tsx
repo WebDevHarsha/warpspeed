@@ -142,16 +142,10 @@ function DialogicAITeacher() {
 
   return (
    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
-  {/* Sidebar (hidden on small screens) */}
-  <div className="hidden md:block">
-    <VerticalNavbar />
-  </div>
-
   {/* Chat Panel */}
   <div className="flex flex-col flex-1 md:border-l md:border-r bg-muted/30">
     <ChatHeader />
 
-    {/* Main content */}
     <div className="flex flex-col h-full p-4 overflow-hidden">
       <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hidden">
         {conversation.length === 0 ? (

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Home, Brain, BookOpen, Moon, Settings, User } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ModeToggle } from "./ModeToggle"
 
 const VerticalNavbar = () => {
   const { data: session } = useSession()
@@ -20,7 +21,7 @@ const VerticalNavbar = () => {
 
   const user = session?.user
   const userInitial = user?.name?.charAt(0).toUpperCase()
-  const fallbackImage = "/fallback-user.png" // optional: place in /public
+  const fallbackImage = "/fallback-user.png" // fallback if no profile image
 
   return (
     <Card className="w-64 h-full rounded-none bg-background/90 backdrop-blur-sm shadow-none border-none flex flex-col">
@@ -40,11 +41,10 @@ const VerticalNavbar = () => {
           <Button
             key={`${item.href}-${index}`}
             variant="ghost"
-            className={`w-full justify-start space-x-3 transition-all ${
-              item.active
+            className={`w-full justify-start space-x-3 transition-all ${item.active
                 ? "bg-cyan-500/15 text-cyan-400"
                 : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            }`}
+              }`}
             asChild
           >
             <Link href={item.href} className="flex items-center space-x-3">
@@ -55,7 +55,7 @@ const VerticalNavbar = () => {
         ))}
 
         <div className="mt-auto pt-6">
-          <Card className="p-3 bg-muted/40 shadow-none border-none">
+          <Card className="p-3 bg-muted/40 shadow-none border-none space-y-3">
             <div className="flex items-center space-x-3">
               <Avatar className="h-8 w-8 border">
                 <AvatarImage
@@ -81,25 +81,29 @@ const VerticalNavbar = () => {
               </div>
             </div>
 
-            {session ? (
-              <Button
-                variant="link"
-                className="text-xs text-muted-foreground px-0 pt-1"
-                onClick={() => signOut()}
-              >
-                Sign out
-              </Button>
-            ) : (
-              <Button
-                variant="link"
-                className="text-xs text-muted-foreground px-0 pt-1"
-                onClick={() => signIn("google", { callbackUrl: "/dialogic" })}
-              >
-                Sign in
-              </Button>
-            )}
+            <div className="flex justify-between items-center pt-2">
+              <ModeToggle />
+              {session ? (
+                <Button
+                  variant="ghost"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => signOut()}
+                >
+                  Sign out
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => signIn("google", { callbackUrl: "/dialogic" })}
+                >
+                  Sign in
+                </Button>
+              )}
+            </div>
           </Card>
         </div>
+
       </CardContent>
     </Card>
   )
