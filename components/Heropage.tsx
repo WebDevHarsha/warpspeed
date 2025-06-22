@@ -278,7 +278,7 @@ return (
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-fade-in-up delay-500">
-            <CTAButton href="/dialogic">
+            <CTAButton href="/socratic">
               Try It Now
             </CTAButton>
             <CTAButton variant="outline">

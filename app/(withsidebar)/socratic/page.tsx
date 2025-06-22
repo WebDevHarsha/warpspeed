@@ -1,7 +1,6 @@
 "use client"
 
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react"
-import VerticalNavbar from "@/components/vertical-navbar"
 import WelcomeScreen from "@/components/welcome-screen"
 import MessageBubble from "@/components/message-bubble"
 import ThinkingIndicator from "@/components/thinking-indicator"
@@ -15,7 +14,7 @@ import { handleFileUpload } from "@/utils/file-utils"
 import type { Message, Transcript, Expression } from "@/types"
 import ChatHeader from "@/components/Chat-header"
 
-function DialogicAITeacher() {
+function socraticAITeacher() {
   const [conversation, setConversation] = useState<Message[]>([])
   const [userInput, setUserInput] = useState<string>("")
   const [isThinking, setIsThinking] = useState<boolean>(false)
@@ -190,4 +189,4 @@ function DialogicAITeacher() {
   )
 }
 
-export default DialogicAITeacher
+export default socraticAITeacher

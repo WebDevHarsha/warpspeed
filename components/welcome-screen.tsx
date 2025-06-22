@@ -24,7 +24,7 @@ const WelcomeScreen = () => {
       </div>
 
       {/* Text Content */}
-      <h3 className="text-2xl font-bold text-foreground mb-1">Welcome to Dialogic</h3>
+      <h3 className="text-2xl font-bold text-foreground mb-1">Welcome to Socratic</h3>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         Begin your journey into Socratic learning — ask something thoughtful to get started.
       </p>

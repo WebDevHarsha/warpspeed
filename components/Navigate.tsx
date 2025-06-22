@@ -75,7 +75,7 @@ function Navigate() {
             ) : (
               <Button
                 className="hidden md:block bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white"
-                onClick={() => signIn("google", { callbackUrl: "/dialogic" })}
+                onClick={() => signIn("google", { callbackUrl: "/socratic" })}
               >
                 Sign In
               </Button>
@@ -119,7 +119,7 @@ function Navigate() {
                       <LogOut className="w-4 h-4 mr-2" /> Sign Out
                     </Button>
                   ) : (
-                    <Button className="w-full bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white" onClick={() => signIn("google", { callbackUrl: "/dialogic" })}>
+                    <Button className="w-full bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white" onClick={() => signIn("google", { callbackUrl: "/socratic" })}>
                       Sign In
                     </Button>
                   )}

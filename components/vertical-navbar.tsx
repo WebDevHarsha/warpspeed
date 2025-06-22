@@ -13,8 +13,8 @@ const VerticalNavbar = () => {
 
   const navItems = [
     { href: "/", icon: Home, label: "Home", active: false },
-    { href: "/dialogic", icon: Brain, label: "Dialogic Chat", active: true },
-    { href: "/learning-paths", icon: BookOpen, label: "Learning Paths", active: false },
+    { href: "/socratic", icon: Brain, label: "Socratic Chat", active: true },
+    { href: "/feynman", icon: BookOpen, label: "Feynman AI", active: false },
     { href: "/sleepai", icon: Moon, label: "Sleep Learning", active: false },
     { href: "/settings", icon: Settings, label: "Settings", active: false },
   ]
@@ -29,7 +29,7 @@ const VerticalNavbar = () => {
         <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-foreground bg-clip-text text-transparent">
           MetaLearn
         </div>
-        <div className="text-sm text-muted-foreground">Dialogic AI</div>
+        <div className="text-sm text-muted-foreground">socratic AI</div>
       </CardHeader>
 
       <CardContent className="flex-1 p-4 pt-2 flex flex-col space-y-2">
@@ -95,7 +95,7 @@ const VerticalNavbar = () => {
                 <Button
                   variant="ghost"
                   className="text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => signIn("google", { callbackUrl: "/dialogic" })}
+                  onClick={() => signIn("google", { callbackUrl: "/socratic" })}
                 >
                   Sign in
                 </Button>

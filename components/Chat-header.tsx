@@ -8,7 +8,7 @@ const ChatHeader = () => {
       <div className="flex flex-col gap-0.5">
         <h1 className="text-lg md:text-2xl font-semibold leading-tight">
           <span className="bg-gradient-to-r from-cyan-400 to-foreground bg-clip-text text-transparent">
-            Dialogic
+            Socratic
           </span>{" "}
           AI Teacher
         </h1>
