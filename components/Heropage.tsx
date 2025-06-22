@@ -4,83 +4,130 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
-import { Brain, Sparkles, ArrowRight, Zap, Stars, CircuitBoard, BookOpen, Lightbulb, Target } from "lucide-react"
-import { useState, useEffect } from "react"
+import {
+  Brain,
+  Sparkles,
+  ArrowRight,
+  Zap,
+  Stars,
+  CircuitBoard,
+  BookOpen,
+  Lightbulb,
+  Target,
+} from "lucide-react"
+import { useState, useEffect, MouseEvent } from "react"
+import TellaEmbed from "./Vide"
 
-// Animated Background Component
+interface Particle {
+  left: string
+  top: string
+  animationDelay: string
+  animationDuration: string
+}
+
+interface Ripple {
+  x: number
+  y: number
+  id: number
+}
+
+interface FeatureCardProps {
+  icon: React.ElementType
+  title: string
+  description: string
+  gradient: string
+  delay?: number
+}
+
+interface CTAButtonProps {
+  href?: string
+  children: React.ReactNode
+  variant?: "primary" | "outline"
+}
+
 const AnimatedBackground = () => {
+  const [particles, setParticles] = useState<Particle[]>([])
+
+  useEffect(() => {
+    const generated = Array.from({ length: 20 }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 3}s`,
+      animationDuration: `${2 + Math.random() * 2}s`,
+    }))
+    setParticles(generated)
+  }, [])
+
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Gradient orbs */}
       <div className="absolute top-1/4 left-1/6 w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 dark:from-cyan-400/10 dark:to-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-1/3 right-1/6 w-80 h-80 bg-gradient-to-r from-indigo-500/15 to-purple-500/15 dark:from-indigo-400/8 dark:to-purple-400/8 rounded-full blur-3xl animate-pulse delay-1000"></div>
       <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 dark:from-teal-400/5 dark:to-cyan-400/5 rounded-full blur-2xl animate-pulse delay-2000"></div>
-      
-      {/* Animated rings */}
+
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="w-[800px] h-[800px] border border-cyan-500/20 dark:border-cyan-400/10 rounded-full animate-spin opacity-30" style={{ animationDuration: "30s" }}></div>
-        <div className="absolute inset-16 border border-indigo-500/20 dark:border-indigo-400/10 rounded-full animate-spin opacity-40" style={{ animationDuration: "25s", animationDirection: "reverse" }}></div>
-        <div className="absolute inset-32 border border-blue-500/30 dark:border-blue-400/15 rounded-full animate-spin opacity-50" style={{ animationDuration: "20s" }}></div>
+        <div
+          className="w-[800px] h-[800px] border border-cyan-500/20 dark:border-cyan-400/10 rounded-full animate-spin opacity-30"
+          style={{ animationDuration: "30s" }}
+        />
+        <div
+          className="absolute inset-16 border border-indigo-500/20 dark:border-indigo-400/10 rounded-full animate-spin opacity-40"
+          style={{ animationDuration: "25s", animationDirection: "reverse" }}
+        />
+        <div
+          className="absolute inset-32 border border-blue-500/30 dark:border-blue-400/15 rounded-full animate-spin opacity-50"
+          style={{ animationDuration: "20s" }}
+        />
       </div>
-      
-      {/* Floating particles */}
+
       <div className="absolute inset-0">
-        {[...Array(20)].map((_, i) => (
+        {particles.map((style, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400 dark:bg-cyan-300 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
-            }}
-          ></div>
+            style={style}
+          />
         ))}
       </div>
     </div>
   )
 }
 
-// Animated Logo Component
 const AnimatedLogo = () => {
   const [isHovered, setIsHovered] = useState(false)
-  
   return (
-    <div 
+    <div
       className="w-40 h-40 mx-auto relative group cursor-pointer transform transition-all duration-500 hover:scale-110"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Main circle with gradient border */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 rounded-full p-1 transition-all duration-300 ${
-        isHovered ? 'animate-spin shadow-2xl shadow-cyan-500/50' : 'animate-pulse'
-      }`}>
+      <div
+        className={`absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 rounded-full p-1 transition-all duration-300 ${
+          isHovered ? "animate-spin shadow-2xl shadow-cyan-500/50" : "animate-pulse"
+        }`}
+      >
         <div className="w-full h-full bg-white dark:bg-slate-900 rounded-full flex items-center justify-center relative transition-colors duration-300">
-          <Brain className={`w-16 h-16 transition-all duration-300 ${
-            isHovered ? 'text-cyan-500 scale-110' : 'text-cyan-400 dark:text-cyan-300'
-          }`} />
-          
-          {/* Orbiting icons */}
+          <Brain
+            className={`w-16 h-16 transition-all duration-300 ${
+              isHovered ? "text-cyan-500 scale-110" : "text-cyan-400 dark:text-cyan-300"
+            }`}
+          />
           <div className="absolute inset-0 animate-spin" style={{ animationDuration: "10s" }}>
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-              <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+              <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
                 <CircuitBoard className="w-6 h-6 text-white" />
               </div>
             </div>
           </div>
-          
           <div className="absolute inset-0 animate-spin" style={{ animationDuration: "15s", animationDirection: "reverse" }}>
             <div className="absolute top-1/2 -right-6 transform -translate-y-1/2">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
                 <Zap className="w-5 h-5 text-white" />
               </div>
             </div>
           </div>
-          
           <div className="absolute inset-0 animate-spin" style={{ animationDuration: "12s" }}>
             <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-              <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+              <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
                 <Stars className="w-5 h-5 text-white" />
               </div>
             </div>
@@ -91,20 +138,19 @@ const AnimatedLogo = () => {
   )
 }
 
-const FeatureCard = ({ icon: Icon, title, description, gradient, delay = 0 }) => {
+const FeatureCard = ({ icon: Icon, title, description, gradient, delay = 0 }: FeatureCardProps) => {
   const [isHovered, setIsHovered] = useState(false)
-  
   return (
-    <Card 
+    <Card
       className={`bg-white/70 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50 backdrop-blur-sm p-6 transition-all duration-500 group cursor-pointer transform hover:scale-105 hover:shadow-2xl animate-fade-in-up ${
-        isHovered ? 'shadow-xl' : ''
+        isHovered ? "shadow-xl" : ""
       }`}
       style={{ animationDelay: `${delay}ms` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`w-12 h-12 bg-gradient-to-r ${gradient} rounded-lg flex items-center justify-center mb-4 transform transition-all duration-300 ${
-        isHovered ? 'scale-110 rotate-6' : ''
+        isHovered ? "scale-110 rotate-6" : ""
       }`}>
         <Icon className="w-6 h-6 text-white" />
       </div>
@@ -114,68 +160,44 @@ const FeatureCard = ({ icon: Icon, title, description, gradient, delay = 0 }) =>
   )
 }
 
-const CTAButton = ({ href, children, variant = "primary" }) => {
-  const [ripples, setRipples] = useState([])
-  
-  const handleClick = (e) => {
+const CTAButton = ({ href = "#", children, variant = "primary" }: CTAButtonProps) => {
+  const [ripples, setRipples] = useState<Ripple[]>([])
+
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
-    
+
     const newRipple = {
       x,
       y,
-      id: Math.random()
+      id: Math.random(),
     }
-    
-    setRipples(prev => [...prev, newRipple])
-    
+
+    setRipples((prev) => [...prev, newRipple])
     setTimeout(() => {
-      setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id))
+      setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id))
     }, 600)
   }
-  
-  if (variant === "primary") {
-    return (
-      <Link href={href}>
-        <Button 
-          size="lg" 
-          className="relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 px-8 py-4 text-lg font-semibold shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 group transform hover:scale-105"
-          onClick={handleClick}
-        >
-          {children}
-          <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-          
-          {ripples.map(ripple => (
-            <span
-              key={ripple.id}
-              className="absolute bg-white/30 rounded-full animate-ping"
-              style={{
-                left: ripple.x - 10,
-                top: ripple.y - 10,
-                width: 20,
-                height: 20,
-              }}
-            />
-          ))}
-        </Button>
-      </Link>
-    )
-  }
-  
-  return (
-    <Button 
-      variant="outline" 
+
+  const buttonContent = (
+    <Button
       size="lg"
-      className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white px-8 py-4 text-lg font-semibold backdrop-blur-sm bg-white/20 dark:bg-slate-800/20 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 transform hover:scale-105"
+      className={`relative overflow-hidden px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 group ${
+        variant === "primary"
+          ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40"
+          : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white backdrop-blur-sm bg-white/20 dark:bg-slate-800/20 hover:border-slate-400 dark:hover:border-slate-500"
+      }`}
       onClick={handleClick}
     >
       {children}
-      
-      {ripples.map(ripple => (
+      {variant === "primary" && (
+        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+      )}
+      {ripples.map((ripple) => (
         <span
           key={ripple.id}
-          className="absolute bg-slate-400/30 rounded-full animate-ping"
+          className={`absolute ${variant === "primary" ? "bg-white/30" : "bg-slate-400/30"} rounded-full animate-ping`}
           style={{
             left: ripple.x - 10,
             top: ripple.y - 10,
@@ -186,25 +208,27 @@ const CTAButton = ({ href, children, variant = "primary" }) => {
       ))}
     </Button>
   )
+
+  return variant === "primary" ? <Link href={href}>{buttonContent}</Link> : buttonContent
 }
 
-// Main Hero Component
 export default function HeroPage() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 })
+
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
+        y: (e.clientY / window.innerHeight) * 100,
       })
     }
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener("mousemove", handleMouseMove as any)
+    return () => window.removeEventListener("mousemove", handleMouseMove as any)
   }, [])
 
-  return (
+  
+
+return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-white overflow-hidden transition-colors duration-500 pt-20">
       <AnimatedBackground />
       
@@ -317,6 +341,7 @@ export default function HeroPage() {
           </div>
         </div>
       </section>
+        <TellaEmbed />
 
       <style jsx>{`
         @keyframes fade-in-up {
@@ -357,3 +382,6 @@ export default function HeroPage() {
     </div>
   )
 }
+
+
+
