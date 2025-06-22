@@ -1,8 +1,6 @@
 "use client"
 
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-
 import VerticalNavbar from "@/components/vertical-navbar"
 import WelcomeScreen from "@/components/welcome-screen"
 import MessageBubble from "@/components/message-bubble"
@@ -28,7 +26,7 @@ function DialogicAITeacher() {
   const [videoId, setVideoId] = useState<string>("")
   const [transcript, setTranscript] = useState<Transcript[]>([])
   const [interrupted, setInterrupted] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null!)
 
   const regex = /y\s*=\s*[\w^{}\\]+/g
   useSpeechRecognition({ isListening, setUserInput, setIsListening })
