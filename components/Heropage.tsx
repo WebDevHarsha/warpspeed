@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function HeroPage() {
   return (
@@ -41,10 +42,12 @@ export default function HeroPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Button className="bg-gradient-to-r from-[#2C2A4A] to-[#00FFFF] text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-2xl hover:shadow-[#00FFFF]/25 transition-all duration-300 hover:scale-105 transform">
+            <Link href="/dialogic">
+            <Button className="">
               Try It Now
             </Button>
-            <Button variant="outline" className="border-2 border-[#00FFFF] px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 transform text-[#2C2A4A] dark:text-[#00FFFF] hover:bg-[#00FFFF] hover:text-white dark:hover:text-gray-900">
+            </Link>
+            <Button variant="outline" className="">
               How It Works
             </Button>
           </div>
